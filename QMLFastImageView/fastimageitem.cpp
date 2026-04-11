@@ -15,16 +15,7 @@ void FastImageItem::setImage(const QImage &image)
     if (m_rendering.load(std::memory_order_relaxed) || m_updatePending)
         return;
     // enforce GUI thread
-    if (QThread::currentThread() != qApp->thread())
-    {
-        // QMetaObject::invokeMethod(
-        //     this,
-        //     "setImage",
-        //     Qt::QueuedConnection,
-        //     Q_ARG(QImage, image));
-        return;
-    }
-    else
+    if (QThread::currentThread() == qApp->thread())
     {
         if(!image.isNull())
         {
@@ -40,7 +31,7 @@ QSGNode *FastImageItem::updatePaintNode(QSGNode *oldNode,
 {
     if(m_updatePending)
     {
-        return nullptr;
+        return oldNode;
     }
     m_updatePending = true;
     m_rendering.store(true, std::memory_order_relaxed);
@@ -51,7 +42,10 @@ QSGNode *FastImageItem::updatePaintNode(QSGNode *oldNode,
         node = new QSGSimpleTextureNode();
 
     if (!window())
+    {
+        m_updatePending = false;
         return node;
+    }
 
     QImage frame;
 
