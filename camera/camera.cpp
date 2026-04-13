@@ -267,8 +267,6 @@ void Camera::processFrame(const QVideoFrame &frame)
         }
 
         emit newFrameRecieved(&cameraFrame);
-
-        //f.unmap();
         return;
     }
     else
