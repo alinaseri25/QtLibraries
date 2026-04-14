@@ -157,16 +157,17 @@ void VoiceEngine::enableGrammar(const QStringList &words)
 {
     if (!recognizer) return;
 
-    QString jsonList = "[";
-    for (int i = 0; i < words.size(); ++i) {
-        jsonList += "\"" + words[i] + "\"";
-        if (i < words.size() - 1) jsonList += ",";
+    QJsonArray array;
+
+    for(const QString &str : words)
+    {
+        array.append(QJsonValue(str));
     }
-    jsonList += "]";
+    Grammer.setArray(array);
 
-    vosk_recognizer_set_grm(recognizer, jsonList.toUtf8());
+    vosk_recognizer_set_grm(recognizer, ((QString)Grammer.toJson(QJsonDocument::Compact)).toUtf8());
 
-    qDebug() << "[VOICE] Grammar ENABLED:" << jsonList;
+    qDebug() << "[VOICE] Grammar ENABLED:" << Grammer;
 }
 
 void VoiceEngine::disableGrammar()

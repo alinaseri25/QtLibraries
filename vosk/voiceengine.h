@@ -10,6 +10,9 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QStringList>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 #include <vosk_api.h>
 
@@ -51,6 +54,8 @@ private:
 
     QAudioFormat format;
     bool running = false;
+
+    QJsonDocument Grammer;
 };
 
 #endif // VOICEENGINE_H
