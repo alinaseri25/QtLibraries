@@ -73,17 +73,9 @@ bool VoiceEngine::start(int deviceId)
     QList<QAudioDevice> devices = QMediaDevices::audioInputs();
     QAudioDevice selected = QMediaDevices::defaultAudioInput();
 
-    // if (!deviceId.isEmpty()) {
-    //     for (const auto &dev : devices) {
-    //         if (dev.description().contains(deviceId, Qt::CaseInsensitive)) {
-    //             selected = dev;
-    //             break;
-    //         }
-    //     }
-    // }
-    if(deviceId == -1)
+    if(deviceId != -1)
     {
-        selected = QMediaDevices::defaultAudioInput();
+        selected = devices[deviceId];
     }
 
     qDebug() << "[VOICE] Using input device:" << selected.description();
@@ -163,18 +155,35 @@ void VoiceEngine::enableGrammar(const QStringList &words)
     {
         array.append(QJsonValue(str));
     }
-    Grammer.setArray(array);
+    if (grammerDoc)
+    {
+        delete grammerDoc;
+        grammerDoc = nullptr;
+    }
+    grammerDoc = new QJsonDocument(array);
 
-    vosk_recognizer_set_grm(recognizer, ((QString)Grammer.toJson(QJsonDocument::Compact)).toUtf8());
+    //vosk_recognizer_set_grm(recognizer, ((QString)grammerDoc->toJson(QJsonDocument::Compact)).toUtf8());
+    recognizer = vosk_recognizer_new_grm(model, 16000.0, ((QString)grammerDoc->toJson(QJsonDocument::Compact)).toUtf8());
 
-    qDebug() << "[VOICE] Grammar ENABLED:" << Grammer;
+    qDebug() << "[VOICE] Grammar ENABLED:" << *grammerDoc;
 }
 
 void VoiceEngine::disableGrammar()
 {
-    if (!recognizer) return;
+    if (!recognizer)
+    {
+        return;
+    }
+    vosk_recognizer_free(recognizer);
+    recognizer = nullptr;
 
-    vosk_recognizer_set_grm(recognizer, "[]");
+    if (grammerDoc)
+    {
+        delete grammerDoc;
+        grammerDoc = nullptr;
+    }
+
+    recognizer = vosk_recognizer_new(model, 16000.0);
 
     qDebug() << "[VOICE] Grammar DISABLED → FULL MODEL restored.";
 }

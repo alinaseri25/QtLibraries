@@ -55,7 +55,7 @@ private:
     QAudioFormat format;
     bool running = false;
 
-    QJsonDocument Grammer;
+    QJsonDocument *grammerDoc = nullptr;
 };
 
 #endif // VOICEENGINE_H
