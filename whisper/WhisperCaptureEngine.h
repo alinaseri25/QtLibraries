@@ -65,13 +65,13 @@ private:
 
     // Audio Ring Buffer (float32, 16000Hz, mono)
     QVector<float> ring;
-    int ringMaxSamples = 16000 * 30;  // 30 seconds
+    int ringMaxSamples = 16000 * 10;  // 30 seconds
     int ringWritePos = 0;
     bool ringFilled = false;
 
     // inference window
-    int windowSamples = 16000 * 10;   // last 10 seconds
-    int stepSamples   = 16000 * 1;    // run inference every 1 sec
+    int windowSamples = 16000 * 2;   // last 10 seconds
+    int stepSamples   = 16000 * 2;    // run inference every 1 sec
 
     int samplesSinceLastInference = 0;
 

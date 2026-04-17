@@ -55,15 +55,17 @@ void WhisperStreamingEngine::selectDevice(const int &id)
     if(deviceId == -1)
     {
         selectedDevice = QMediaDevices::defaultAudioInput();
-        return;
     }
-
-    for (auto &d : audioDevices) {
-        if (d.id() == id) {
-            selectedDevice = d;
-            return;
+    else
+    {
+        for (auto &d : audioDevices) {
+            if (d.id() == id) {
+                selectedDevice = d;
+                break;
+            }
         }
     }
+    qDebug() << QString("Selected Audeio Device : %1").arg(selectedDevice.description());
 }
 
 //
@@ -108,7 +110,7 @@ void WhisperStreamingEngine::start()
     QAudioFormat fmt;
     fmt.setSampleRate(16000);
     fmt.setChannelCount(1);
-    fmt.setSampleFormat(QAudioFormat::Float);
+    fmt.setSampleFormat(QAudioFormat::Int16);
 
     // start audio properly according to Qt 6.10
     audio = new QAudioSource(selectedDevice, fmt, this);
@@ -124,6 +126,10 @@ void WhisperStreamingEngine::start()
 
     inferenceTimer->start();
     setState(EngineState::Running);
+
+    qDebug() << "Volume before:" << audio->volume();
+    audio->setVolume(1.0f);
+    qDebug() << "Volume after:" << audio->volume();
 }
 
 //
@@ -153,20 +159,30 @@ void WhisperStreamingEngine::stop()
 void WhisperStreamingEngine::processAudio()
 {
     QByteArray data = audioIO->readAll();
-    int samples = data.size() / 4;
+    if (data.isEmpty())
+        return;
 
-    const float *src = reinterpret_cast<const float*>(data.constData());
+    int numSamples = data.size() / sizeof(int16_t);
+    if (numSamples <= 0)
+        return;
 
-    for (int i = 0; i < samples; i++) {
-        ring[ringWritePos++] = src[i];
+    const int16_t *src = reinterpret_cast<const int16_t*>(data.constData());
 
+    for (int i = 0; i < numSamples; ++i) {
+        float s = static_cast<float>(src[i] * 10) / 32768.0f;
+        //qDebug() << QString("s: %1 -- src[i]: %2").arg(s).arg(src[i]);
+
+        ring[ringWritePos] = s;
+        //qDebug() << QString("Whisper Data: %1").arg(floatBuffer[i]);
+
+        ringWritePos++;
         if (ringWritePos >= ringMaxSamples) {
             ringWritePos = 0;
             ringFilled = true;
         }
     }
 
-    samplesSinceLastInference += samples;
+    samplesSinceLastInference += numSamples;
 }
 
 //
@@ -179,6 +195,8 @@ void WhisperStreamingEngine::applySilenceDetection(const QVector<float> &samples
         avg += std::fabs(s);
 
     avg /= samples.size();
+
+    qDebug() << "Average amplitude:" << avg;
 
     if (avg < silenceThreshold)
         silentFrames++;
