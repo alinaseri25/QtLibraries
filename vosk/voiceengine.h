@@ -34,8 +34,8 @@ public:
     QList<QAudioDevice> *getAudioDevices(void);
 
 signals:
-    void finalResult(QString text);
-    void partialResult(QString text);
+    void finalResult(const QJsonDocument finalResultDoc);
+    void partialResult(const QJsonDocument partialResultDoc);
 
 private slots:
     void processAudio();
@@ -56,6 +56,8 @@ private:
     bool running = false;
 
     QJsonDocument *grammerDoc = nullptr;
+
+    QJsonDocument partialResultDoc,finalResultDoc;
 };
 
 #endif // VOICEENGINE_H

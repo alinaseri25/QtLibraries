@@ -115,12 +115,27 @@ void VoiceEngine::processAudio()
                                              data.constData(),
                                              data.size());
 
+    QJsonParseError jsonParseError;
     if (ok) {
-        const char *res = vosk_recognizer_result(recognizer);
-        emit finalResult(QString::fromUtf8(res));
+        QByteArray res = vosk_recognizer_result(recognizer);
+        finalResultDoc = QJsonDocument::fromJson(res,&jsonParseError);
+        if(jsonParseError.error == QJsonParseError::NoError)
+        {
+            if(finalResultDoc.object().value("text").toString("") != "")
+            {
+                emit finalResult(finalResultDoc);
+            }
+        }
     } else {
-        const char *partial = vosk_recognizer_partial_result(recognizer);
-        emit partialResult(QString::fromUtf8(partial));
+        QByteArray partial = vosk_recognizer_partial_result(recognizer);
+        partialResultDoc = QJsonDocument::fromJson(partial,&jsonParseError);
+        if(jsonParseError.error == QJsonParseError::NoError)
+        {
+            if(partialResultDoc.object().value("text").toString("") != "")
+            {
+                emit partialResult(partialResultDoc);
+            }
+        }
     }
 }
 
