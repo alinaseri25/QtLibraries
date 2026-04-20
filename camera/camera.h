@@ -11,6 +11,7 @@
 #include <QVideoSink>
 #include <QMediaPlayer>
 #include <QThread>
+#include <QFileInfo>
 
 #include <QVariantList>
 #include <QVariantMap>
@@ -47,7 +48,7 @@ public slots:
     void stopCamera(void);
     void camerListRequest(void);
     void cameraSelected(int _camera, bool _autoReconnect = false);
-    void cameraSelected(const QUrl &url, bool _autoReconnect = false);
+    void cameraSelected(const QString &url, bool _autoReconnect = false);
     void setVideoSink(QVideoSink *_sink = nullptr);
     void startCamera(void);
     void pauseCamera(void);

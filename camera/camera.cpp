@@ -117,7 +117,7 @@ void Camera::camerListRequest()
     emit cameraListResponse(list);
 }
 
-void Camera::cameraSelected(const QUrl &url, bool _autoReconnect)
+void Camera::cameraSelected(const QString &url, bool _autoReconnect)
 {
     if(cameraState == Stopping)
     {
@@ -128,7 +128,22 @@ void Camera::cameraSelected(const QUrl &url, bool _autoReconnect)
         pauseCamera();
     }
     autoReconnect = _autoReconnect;
-    mediaPlayerUrl = url;
+    if(url.contains("://"))
+    {
+        mediaPlayerUrl = QUrl(url);
+    }
+    else
+    {
+        QFileInfo fi(url);
+        if (fi.exists())
+        {
+            mediaPlayerUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
+        }
+        else
+        {
+            mediaPlayerUrl = QUrl::fromLocalFile(url);
+        }
+    }
     selectedCamera = -1;
     stopCamera();
     setCameraState(CameraState::Starting);
@@ -300,7 +315,7 @@ void Camera::onError(QMediaPlayer::Error error, const QString &errorString)
         }
         else if(mediaPlayerUrl != QUrl(QString("")))
         {
-            cameraSelected(mediaPlayerUrl,autoReconnect);
+            cameraSelected(mediaPlayerUrl.toString(),autoReconnect);
         }
     }
     else
@@ -322,7 +337,7 @@ void Camera::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
             }
             else if(mediaPlayerUrl != QUrl(QString("")))
             {
-                cameraSelected(mediaPlayerUrl,autoReconnect);
+                cameraSelected(mediaPlayerUrl.toString(),autoReconnect);
             }
         }
         else
