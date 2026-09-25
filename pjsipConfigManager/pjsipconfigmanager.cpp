@@ -107,7 +107,7 @@ void PjSipConfigManager::parseContent(const QString &content)
     m_sections.clear();
 
     const QStringList lines = content.split('\n');
-    static const QRegularExpression sectionHeaderRegex(R"(^\s*\[([^\]\(!]+)(?:\(([^)]*)\))?\])");
+    static const QRegularExpression sectionHeaderRegex(R"(^\s*\[([^\]\(\)]+)\](?:\(([^)]+)\))?)");//(R"(^\s*\[([^\]\(!]+)(?:\(([^)]*)\))?\])");
     static const QRegularExpression keyValueRegex(R"(^\s*([^=;]+?)\s*=\s*([^;]*))");
 
     Section currentSection;
