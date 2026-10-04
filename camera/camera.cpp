@@ -193,7 +193,7 @@ void Camera::cameraSelected(int _camera, bool _autoReconnect)
         setVideoSink(new QVideoSink(nullptr));
     }
 
-    if(cameras.size() < _camera)
+    if (_camera < 0 || _camera >= cameras.size())
     {
         _camera = 0;
     }
