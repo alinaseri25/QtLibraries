@@ -1,0 +1,129 @@
+# ==============================================================================
+# PJSIP Cross-Platform Configuration
+# ==============================================================================
+
+# تعریف مسیر پایه در مخزن محلی کتابخانه‌ها
+set(PJSIP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../QtLibraris/pjsip" CACHE PATH "Path to PJSIP root directory")
+
+# اضافه کردن مسیر include برای تمام پلتفرم‌ها
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${PJSIP_ROOT}/include
+)
+
+# ------------------------------------------------------------------------------
+# 1. Windows (MinGW x86_64)
+# ------------------------------------------------------------------------------
+if(WIN32)
+    message(STATUS "[PJSIP] Configuring for Windows MinGW x86_64...")
+
+    target_link_directories(${PROJECT_NAME} PRIVATE
+        ${PJSIP_ROOT}/lib/windows-x86_64
+    )
+
+    # نام باینری‌های تولیدشده توسط MinGW
+    set(PJSIP_SUFFIX "-x86_64-w64-mingw32")
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        # PJSUA2 (C++ Object-Oriented API)
+        pjsua2${PJSIP_SUFFIX}
+
+        # هسته اصلی C و پروتکل SIP
+        pjsua${PJSIP_SUFFIX}
+        pjsip-ua${PJSIP_SUFFIX}
+        pjsip-simple${PJSIP_SUFFIX}
+        pjsip${PJSIP_SUFFIX}
+
+        # پردازش صوت و تصویر (Media Stack)
+        pjmedia-codec${PJSIP_SUFFIX}
+        pjmedia-videodev${PJSIP_SUFFIX}
+        pjmedia-audiodev${PJSIP_SUFFIX}
+        pjmedia${PJSIP_SUFFIX}
+
+        # NAT Traversal و کتابخانه‌های پایه
+        pjnath${PJSIP_SUFFIX}
+        pjlib-util${PJSIP_SUFFIX}
+        pjlib${PJSIP_SUFFIX}
+
+        # کدک‌ها و کتابخانه‌های شخص ثالث درون PJSIP
+        resample${PJSIP_SUFFIX}
+        srtp${PJSIP_SUFFIX}
+        speex${PJSIP_SUFFIX}
+        ilbccodec${PJSIP_SUFFIX}
+        g7221codec${PJSIP_SUFFIX}
+
+        # لایبرری‌های سیستمی ویندوز
+        ws2_32
+        wsock32
+        ole32
+        dsound
+        winmm
+    )
+
+# ------------------------------------------------------------------------------
+# 2. Android (NDK)
+# ------------------------------------------------------------------------------
+elseif(ANDROID)
+    message(STATUS "[PJSIP] Configuring for Android (${ANDROID_ABI})...")
+
+    # هدایت خودکار بر اساس معماری انتخابی در Qt Creator (arm64-v8a یا armeabi-v7a)
+    target_link_directories(${PROJECT_NAME} PRIVATE
+        ${PJSIP_ROOT}/lib/android-${ANDROID_ABI}
+    )
+
+    # نام لایبرری‌ها در اندروید بر اساس تارگت بیلد (بدون پسوند mingw)
+    set(PJSIP_SUFFIX "-${CMAKE_ANDROID_ARCH_TRIPLE}")
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        # کتابخانه‌های PJSIP
+        pjsua2${PJSIP_SUFFIX}
+        pjsua${PJSIP_SUFFIX}
+        pjsip-ua${PJSIP_SUFFIX}
+        pjsip-simple${PJSIP_SUFFIX}
+        pjsip${PJSIP_SUFFIX}
+        pjmedia-codec${PJSIP_SUFFIX}
+        pjmedia-videodev${PJSIP_SUFFIX}
+        pjmedia-audiodev${PJSIP_SUFFIX}
+        pjmedia${PJSIP_SUFFIX}
+        pjnath${PJSIP_SUFFIX}
+        pjlib-util${PJSIP_SUFFIX}
+        pjlib${PJSIP_SUFFIX}
+        resample${PJSIP_SUFFIX}
+        srtp${PJSIP_SUFFIX}
+        speex${PJSIP_SUFFIX}
+        ilbccodec${PJSIP_SUFFIX}
+        g7221codec${PJSIP_SUFFIX}
+
+        # لایبرری‌های سیستمی اندروید NDK
+        OpenSLES
+        log
+        android
+    )
+
+# ------------------------------------------------------------------------------
+# 3. Linux Desktop (در صورت نیاز به بیلد مستقیم روی دبیان/اوبونتو)
+# ------------------------------------------------------------------------------
+elseif(UNIX AND NOT ANDROID)
+    message(STATUS "[PJSIP] Configuring for Linux...")
+
+    target_link_directories(${PROJECT_NAME} PRIVATE
+        ${PJSIP_ROOT}/lib/linux-x86_64
+    )
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        pjsua2
+        pjsua
+        pjsip-ua
+        pjsip-simple
+        pjsip
+        pjmedia-codec
+        pjmedia-videodev
+        pjmedia-audiodev
+        pjmedia
+        pjnath
+        pjlib-util
+        pjlib
+        pthread
+        dl
+        m
+    )
+endif()
