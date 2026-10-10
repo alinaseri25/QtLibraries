@@ -4,7 +4,40 @@
 #include <QObject>
 #include <QString>
 #include <memory>
+//#include <pjsua2.hpp>
+#pragma once
+
+#include <QObject>
+#include <QString>
+#include <memory>
+#include <mutex>
+
+// Workaround for MinGW Unicode string function conflicts with PJSIP
+#if defined(_WIN32) && !defined(_MSC_VER)
+#if defined(UNICODE)
+#define PJ_HAD_UNICODE
+#undef UNICODE
+#endif
+#if defined(_UNICODE)
+#define PJ_HAD_UNDERSCORE_UNICODE
+#undef _UNICODE
+#endif
+#endif
+
 #include <pjsua2.hpp>
+
+// Restore Unicode macros for the remaining Qt compilation units
+#if defined(_WIN32) && !defined(_MSC_VER)
+#if defined(PJ_HAD_UNICODE)
+#define UNICODE
+#undef PJ_HAD_UNICODE
+#endif
+#if defined(PJ_HAD_UNDERSCORE_UNICODE)
+#define _UNICODE
+#undef PJ_HAD_UNDERSCORE_UNICODE
+#endif
+#endif
+
 
 class SipClient;
 
