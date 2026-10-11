@@ -61,7 +61,7 @@ public:
      * \param prm PJSUA2 callback parameters.
      */
     void onCallState(pj::OnCallStateParam &prm) override;
-    /*! \brief Handles a PJSUA2 call-media callback and reports active media.
+    /*! \brief Handles a PJSUA2 call-media callback, connects active audio and reports media.
      * \param prm PJSUA2 callback parameters.
      */
     void onCallMediaState(pj::OnCallMediaStateParam &prm) override;
@@ -154,7 +154,7 @@ public:
      * \param withVideo Whether to request video when video is enabled.
      */
     void makeCall(const QString &destExtension, bool withVideo = false);
-    /*! \brief Answers the currently tracked incoming call.
+    /*! \brief Answers the currently tracked call.
      * \param callId Optional expected call ID; a negative value accepts the tracked call.
      *        A non-matching ID is rejected.
      */
