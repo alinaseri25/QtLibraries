@@ -46,16 +46,22 @@ void MyCall::onCallMediaState(pj::OnCallMediaStateParam &prm)
         pj::AudDevManager &adm = ep.audDevManager();
 
         for (unsigned i = 0; i < info.media.size(); ++i) {
+            qInfo() << "[PJSUA2] Call media:" << getId()
+                    << "index:" << i
+                    << "type:" << static_cast<int>(info.media[i].type)
+                    << "status:" << static_cast<int>(info.media[i].status)
+                    << "direction:" << static_cast<int>(info.media[i].dir);
+
             if (info.media[i].type == PJMEDIA_TYPE_AUDIO &&
                 info.media[i].status == PJSUA_CALL_MEDIA_ACTIVE)
             {
                 hasAudio = true;
-                pj::AudioMedia *audMed =
-                    static_cast<pj::AudioMedia *>(getMedia(i));
+                pj::AudioMedia audMed = getAudioMedia(static_cast<int>(i));
 
-                // Connect the local microphone and speaker to the call media
-                adm.getCaptureDevMedia().startTransmit(*audMed);
-                audMed->startTransmit(adm.getPlaybackDevMedia());
+                // Route the call audio to the local speaker and microphone.
+                audMed.startTransmit(adm.getPlaybackDevMedia());
+                adm.getCaptureDevMedia().startTransmit(audMed);
+                qInfo() << "[PJSUA2] Audio routed for call:" << getId();
             }
             else if (info.media[i].type == PJMEDIA_TYPE_VIDEO &&
                      info.media[i].status == PJSUA_CALL_MEDIA_ACTIVE)
@@ -346,6 +352,8 @@ void SipClient::answerCall(int callId)
             try {
                 pj::CallOpParam prm(true);
                 prm.statusCode = PJSIP_SC_OK;
+                prm.opt.audioCount = 1;
+                prm.opt.videoCount = 0;
                 m_currentCall->answer(prm);
             } catch (pj::Error &err) {
                 errorStr = QString("Answer Call Error: %1")
